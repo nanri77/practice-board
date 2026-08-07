@@ -1,33 +1,33 @@
-# Practice Board Implementation Plan
+# 연습용 게시판(Practice Board) 구현 계획
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **에이전트 실행자용:** 필수 서브스킬 — superpowers:subagent-driven-development(권장) 또는 superpowers:executing-plans로 이 계획을 태스크 단위로 실행할 것. 각 단계는 체크박스(`- [ ]`)로 진행 상황을 추적한다.
 
-**Goal:** Build a local-only Next.js + SQLite bulletin board (post + comment CRUD, no login) as a practice project for the full "spec → plan → implement → verify" workflow.
+**목표:** "명세서 → 계획 → 구현 → 검증" 전체 워크플로를 연습하기 위한 프로젝트로, 로컬 전용 Next.js + SQLite 게시판(게시글+댓글 CRUD, 로그인 없음)을 만든다.
 
-**Architecture:** Next.js App Router project. Pure, testable CRUD functions live in `lib/posts.ts` and `lib/comments.ts` (plain TypeScript, no framework coupling). `app/actions.ts` holds thin `"use server"` wrappers that parse `FormData`, call the `lib/` functions, then handle Next.js-specific concerns (`redirect`, `revalidatePath`). Pages are React Server Components that read data directly; forms that need pending/error state are small Client Components using `useFormState`.
+**아키텍처:** Next.js App Router 프로젝트. 순수하고 테스트 가능한 CRUD 함수는 `lib/posts.ts`와 `lib/comments.ts`에 둔다(프레임워크에 의존하지 않는 순수 TypeScript). `app/actions.ts`는 `FormData`를 파싱해 `lib/` 함수를 호출한 뒤 Next.js 전용 처리(`redirect`, `revalidatePath`)를 담당하는 얇은 `"use server"` 래퍼다. 페이지는 데이터를 직접 읽는 React 서버 컴포넌트이고, 대기/에러 상태가 필요한 폼만 `useFormState`를 쓰는 작은 클라이언트 컴포넌트로 분리한다.
 
-**Tech Stack:** Next.js 14 (App Router), React 18, TypeScript, better-sqlite3, Vitest.
-
----
-
-## Design note: why `lib/` is separate from `app/actions.ts`
-
-The spec calls for "Server Actions 단위 테스트" (unit tests for Server Actions). In practice, functions marked `"use server"` that call `redirect()` or `revalidatePath()` throw special Next.js-internal errors/require a request context when called outside the Next.js runtime — they are not easily unit-testable with plain Vitest. So the CRUD logic itself lives in `lib/posts.ts` / `lib/comments.ts` (fully unit tested in Tasks 3–4), and `app/actions.ts` (Task 5) is a thin, mostly declarative wrapper with no independent logic to unit test — it's verified manually in Task 10 instead.
+**기술 스택:** Next.js 14 (App Router), React 18, TypeScript, better-sqlite3, Vitest.
 
 ---
 
-### Task 1: Project scaffold
+## 설계 메모: `lib/`을 `app/actions.ts`와 분리한 이유
 
-**Files:**
-- Create: `package.json`
-- Create: `tsconfig.json`
-- Create: `next.config.mjs`
-- Create: `vitest.config.ts`
-- Create: `.gitignore`
-- Create: `app/layout.tsx`
-- Create: `app/page.tsx` (placeholder, replaced in Task 6)
+명세서에는 "Server Actions 단위 테스트"가 요구사항으로 들어있다. 그런데 `"use server"`가 붙은 함수 안에서 `redirect()`나 `revalidatePath()`를 호출하면, Next.js 런타임 밖(순수 Vitest)에서 실행할 때 Next.js 내부 전용 에러를 던지거나 요청 컨텍스트를 요구해서 단위 테스트가 어렵다. 그래서 실제 CRUD 로직은 `lib/posts.ts` / `lib/comments.ts`에 두어 완전히 단위 테스트하고(Task 3~4), `app/actions.ts`(Task 5)는 독자적인 로직이 거의 없는 얇은 선언적 래퍼로 남겨서 Task 10에서 수동으로만 검증한다.
 
-- [ ] **Step 1: Create `package.json`**
+---
+
+### Task 1: 프로젝트 스캐폴딩
+
+**파일:**
+- 생성: `package.json`
+- 생성: `tsconfig.json`
+- 생성: `next.config.mjs`
+- 생성: `vitest.config.ts`
+- 생성: `.gitignore`
+- 생성: `app/layout.tsx`
+- 생성: `app/page.tsx` (플레이스홀더, Task 6에서 교체)
+
+- [ ] **1단계: `package.json` 생성**
 
 ```json
 {
@@ -57,7 +57,7 @@ The spec calls for "Server Actions 단위 테스트" (unit tests for Server Acti
 }
 ```
 
-- [ ] **Step 2: Create `tsconfig.json`**
+- [ ] **2단계: `tsconfig.json` 생성**
 
 ```json
 {
@@ -85,7 +85,7 @@ The spec calls for "Server Actions 단위 테스트" (unit tests for Server Acti
 }
 ```
 
-- [ ] **Step 3: Create `next.config.mjs`**
+- [ ] **3단계: `next.config.mjs` 생성**
 
 ```js
 /** @type {import('next').NextConfig} */
@@ -98,7 +98,7 @@ const nextConfig = {
 export default nextConfig;
 ```
 
-- [ ] **Step 4: Create `vitest.config.ts`**
+- [ ] **4단계: `vitest.config.ts` 생성**
 
 ```ts
 import { defineConfig } from "vitest/config";
@@ -110,7 +110,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 5: Create `.gitignore`**
+- [ ] **5단계: `.gitignore` 생성**
 
 ```
 node_modules/
@@ -120,7 +120,7 @@ next-env.d.ts
 *.tsbuildinfo
 ```
 
-- [ ] **Step 6: Create `app/layout.tsx`**
+- [ ] **6단계: `app/layout.tsx` 생성**
 
 ```tsx
 import type { ReactNode } from "react";
@@ -134,7 +134,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 }
 ```
 
-- [ ] **Step 7: Create placeholder `app/page.tsx`**
+- [ ] **7단계: 플레이스홀더 `app/page.tsx` 생성**
 
 ```tsx
 export default function HomePage() {
@@ -142,17 +142,17 @@ export default function HomePage() {
 }
 ```
 
-- [ ] **Step 8: Install dependencies**
+- [ ] **8단계: 의존성 설치**
 
-Run: `npm install`
-Expected: installs without errors, creates `node_modules/` and `package-lock.json`
+실행: `npm install`
+기대 결과: 에러 없이 설치되고 `node_modules/`와 `package-lock.json`이 생성됨
 
-- [ ] **Step 9: Verify the dev server boots**
+- [ ] **9단계: dev 서버가 뜨는지 확인**
 
-Run: `npm run dev`
-Expected: "Ready" log, and `http://localhost:3000` shows the "준비 중" placeholder page. Stop the server (Ctrl+C) once confirmed.
+실행: `npm run dev`
+기대 결과: "Ready" 로그가 뜨고 `http://localhost:3000`에 "준비 중" 플레이스홀더 페이지가 보임. 확인 후 서버 중지(Ctrl+C)
 
-- [ ] **Step 10: Commit**
+- [ ] **10단계: 커밋**
 
 ```bash
 git add package.json package-lock.json tsconfig.json next.config.mjs vitest.config.ts .gitignore app/layout.tsx app/page.tsx
@@ -161,13 +161,13 @@ git commit -m "chore: 프로젝트 스캐폴딩 (Next.js + TypeScript + Vitest)"
 
 ---
 
-### Task 2: Database module
+### Task 2: DB 모듈
 
-**Files:**
-- Create: `lib/db.ts`
-- Test: `lib/db.test.ts`
+**파일:**
+- 생성: `lib/db.ts`
+- 테스트: `lib/db.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **1단계: 실패하는 테스트 작성**
 
 ```ts
 // lib/db.test.ts
@@ -201,12 +201,12 @@ describe("createDb", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **2단계: 테스트 실행 → 실패 확인**
 
-Run: `npx vitest run lib/db.test.ts`
-Expected: FAIL — `Cannot find module './db'` (file doesn't exist yet)
+실행: `npx vitest run lib/db.test.ts`
+기대 결과: FAIL — `Cannot find module './db'` (파일이 아직 없음)
 
-- [ ] **Step 3: Write the implementation**
+- [ ] **3단계: 구현 작성**
 
 ```ts
 // lib/db.ts
@@ -242,12 +242,12 @@ export function createDb(filename: string): DB {
 export const db: DB = createDb(path.join(process.cwd(), "practice-board.db"));
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **4단계: 테스트 실행 → 통과 확인**
 
-Run: `npx vitest run lib/db.test.ts`
-Expected: PASS (2 tests)
+실행: `npx vitest run lib/db.test.ts`
+기대 결과: PASS (테스트 2개)
 
-- [ ] **Step 5: Commit**
+- [ ] **5단계: 커밋**
 
 ```bash
 git add lib/db.ts lib/db.test.ts
@@ -256,13 +256,13 @@ git commit -m "feat: SQLite 연결 + 스키마 초기화 (lib/db.ts)"
 
 ---
 
-### Task 3: Post CRUD functions
+### Task 3: 게시글 CRUD 함수
 
-**Files:**
-- Create: `lib/posts.ts`
-- Test: `lib/posts.test.ts`
+**파일:**
+- 생성: `lib/posts.ts`
+- 테스트: `lib/posts.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [ ] **1단계: 실패하는 테스트 작성**
 
 ```ts
 // lib/posts.test.ts
@@ -364,12 +364,12 @@ describe("deletePost", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [ ] **2단계: 테스트 실행 → 실패 확인**
 
-Run: `npx vitest run lib/posts.test.ts`
-Expected: FAIL — `Cannot find module './posts'`
+실행: `npx vitest run lib/posts.test.ts`
+기대 결과: FAIL — `Cannot find module './posts'`
 
-- [ ] **Step 3: Write the implementation**
+- [ ] **3단계: 구현 작성**
 
 ```ts
 // lib/posts.ts
@@ -421,12 +421,12 @@ export function deletePost(db: DB, id: number): void {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [ ] **4단계: 테스트 실행 → 통과 확인**
 
-Run: `npx vitest run lib/posts.test.ts`
-Expected: PASS (8 tests)
+실행: `npx vitest run lib/posts.test.ts`
+기대 결과: PASS (테스트 8개)
 
-- [ ] **Step 5: Commit**
+- [ ] **5단계: 커밋**
 
 ```bash
 git add lib/posts.ts lib/posts.test.ts
@@ -435,13 +435,13 @@ git commit -m "feat: 게시글 CRUD 함수 (lib/posts.ts)"
 
 ---
 
-### Task 4: Comment CRUD functions
+### Task 4: 댓글 CRUD 함수
 
-**Files:**
-- Create: `lib/comments.ts`
-- Test: `lib/comments.test.ts`
+**파일:**
+- 생성: `lib/comments.ts`
+- 테스트: `lib/comments.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [ ] **1단계: 실패하는 테스트 작성**
 
 ```ts
 // lib/comments.test.ts
@@ -499,12 +499,12 @@ describe("deleteComment", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [ ] **2단계: 테스트 실행 → 실패 확인**
 
-Run: `npx vitest run lib/comments.test.ts`
-Expected: FAIL — `Cannot find module './comments'`
+실행: `npx vitest run lib/comments.test.ts`
+기대 결과: FAIL — `Cannot find module './comments'`
 
-- [ ] **Step 3: Write the implementation**
+- [ ] **3단계: 구현 작성**
 
 ```ts
 // lib/comments.ts
@@ -543,12 +543,12 @@ export function deleteComment(db: DB, id: number): void {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [ ] **4단계: 테스트 실행 → 통과 확인**
 
-Run: `npx vitest run lib/comments.test.ts`
-Expected: PASS (4 tests)
+실행: `npx vitest run lib/comments.test.ts`
+기대 결과: PASS (테스트 4개)
 
-- [ ] **Step 5: Commit**
+- [ ] **5단계: 커밋**
 
 ```bash
 git add lib/comments.ts lib/comments.test.ts
@@ -559,10 +559,10 @@ git commit -m "feat: 댓글 CRUD 함수 (lib/comments.ts)"
 
 ### Task 5: Server Actions
 
-**Files:**
-- Create: `app/actions.ts`
+**파일:**
+- 생성: `app/actions.ts`
 
-- [ ] **Step 1: Write the Server Actions**
+- [ ] **1단계: Server Actions 작성**
 
 ```ts
 // app/actions.ts
@@ -690,7 +690,7 @@ export async function deleteCommentAction(
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [ ] **2단계: 커밋**
 
 ```bash
 git add app/actions.ts
@@ -699,12 +699,12 @@ git commit -m "feat: 게시글/댓글 Server Actions (app/actions.ts)"
 
 ---
 
-### Task 6: Home page (post list)
+### Task 6: 게시글 목록 페이지
 
-**Files:**
-- Modify: `app/page.tsx`
+**파일:**
+- 수정: `app/page.tsx`
 
-- [ ] **Step 1: Replace the placeholder with the real list page**
+- [ ] **1단계: 플레이스홀더를 실제 목록 페이지로 교체**
 
 ```tsx
 // app/page.tsx
@@ -736,12 +736,12 @@ export default function HomePage() {
 }
 ```
 
-- [ ] **Step 2: Manual check**
+- [ ] **2단계: 수동 확인**
 
-Run: `npm run dev`, open `http://localhost:3000`
-Expected: "연습 게시판" heading, "글쓰기" link, and "아직 글이 없습니다." (empty DB so far)
+실행: `npm run dev`, `http://localhost:3000` 접속
+기대 결과: "연습 게시판" 제목, "글쓰기" 링크, "아직 글이 없습니다." 표시 (DB가 비어있으므로)
 
-- [ ] **Step 3: Commit**
+- [ ] **3단계: 커밋**
 
 ```bash
 git add app/page.tsx
@@ -750,12 +750,12 @@ git commit -m "feat: 게시글 목록 페이지"
 
 ---
 
-### Task 7: New post page
+### Task 7: 글쓰기 페이지
 
-**Files:**
-- Create: `app/posts/new/page.tsx`
+**파일:**
+- 생성: `app/posts/new/page.tsx`
 
-- [ ] **Step 1: Write the form page**
+- [ ] **1단계: 폼 페이지 작성**
 
 ```tsx
 // app/posts/new/page.tsx
@@ -790,12 +790,12 @@ export default function NewPostPage() {
 }
 ```
 
-- [ ] **Step 2: Manual check**
+- [ ] **2단계: 수동 확인**
 
-Run: `npm run dev`, open `http://localhost:3000/posts/new`
-Expected: form renders; submitting with an empty field shows the Korean validation message; submitting a valid post redirects to `/posts/<id>` and the post now appears on the home page.
+실행: `npm run dev`, `http://localhost:3000/posts/new` 접속
+기대 결과: 폼이 렌더링됨; 빈 값으로 제출하면 한글 검증 메시지가 표시됨; 정상 제출하면 `/posts/<id>`로 리다이렉트되고 홈 목록에 새 글이 보임
 
-- [ ] **Step 3: Commit**
+- [ ] **3단계: 커밋**
 
 ```bash
 git add app/posts/new/page.tsx
@@ -804,13 +804,13 @@ git commit -m "feat: 글쓰기 페이지"
 
 ---
 
-### Task 8: Post detail page (with comments)
+### Task 8: 게시글 상세 + 댓글 페이지
 
-**Files:**
-- Create: `app/posts/[id]/page.tsx`
-- Create: `app/posts/[id]/comment-form.tsx`
+**파일:**
+- 생성: `app/posts/[id]/page.tsx`
+- 생성: `app/posts/[id]/comment-form.tsx`
 
-- [ ] **Step 1: Write the comment form (Client Component)**
+- [ ] **1단계: 댓글 폼 작성 (클라이언트 컴포넌트)**
 
 ```tsx
 // app/posts/[id]/comment-form.tsx
@@ -840,7 +840,7 @@ export default function CommentForm({ postId }: { postId: number }) {
 }
 ```
 
-- [ ] **Step 2: Write the detail page (Server Component)**
+- [ ] **2단계: 상세 페이지 작성 (서버 컴포넌트)**
 
 ```tsx
 // app/posts/[id]/page.tsx
@@ -897,12 +897,12 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 }
 ```
 
-- [ ] **Step 3: Manual check**
+- [ ] **3단계: 수동 확인**
 
-Run: `npm run dev`, open a post's detail page
-Expected: title/content/nickname/date show; "수정됨" only appears after an edit (Task 9); comment form adds a comment without a full page reload; each comment's "삭제" button removes it; the post's own "삭제" button redirects to `/` and removes it from the list.
+실행: `npm run dev`, 게시글 상세 페이지 접속
+기대 결과: 제목/내용/닉네임/날짜가 표시됨; "수정됨"은 수정 후에만(Task 9) 나타남; 댓글 작성 시 전체 새로고침 없이 반영됨; 댓글별 "삭제" 버튼으로 제거됨; 게시글 자체의 "삭제" 버튼은 `/`로 리다이렉트하고 목록에서 제거됨
 
-- [ ] **Step 4: Commit**
+- [ ] **4단계: 커밋**
 
 ```bash
 git add "app/posts/[id]/page.tsx" "app/posts/[id]/comment-form.tsx"
@@ -911,13 +911,13 @@ git commit -m "feat: 게시글 상세 + 댓글 페이지"
 
 ---
 
-### Task 9: Edit post page
+### Task 9: 게시글 수정 페이지
 
-**Files:**
-- Create: `app/posts/[id]/edit/page.tsx`
-- Create: `app/posts/[id]/edit/edit-form.tsx`
+**파일:**
+- 생성: `app/posts/[id]/edit/page.tsx`
+- 생성: `app/posts/[id]/edit/edit-form.tsx`
 
-- [ ] **Step 1: Write the edit form (Client Component)**
+- [ ] **1단계: 수정 폼 작성 (클라이언트 컴포넌트)**
 
 ```tsx
 // app/posts/[id]/edit/edit-form.tsx
@@ -955,7 +955,7 @@ export default function EditForm({
 }
 ```
 
-- [ ] **Step 2: Write the edit page (Server Component)**
+- [ ] **2단계: 수정 페이지 작성 (서버 컴포넌트)**
 
 ```tsx
 // app/posts/[id]/edit/page.tsx
@@ -978,12 +978,12 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
 }
 ```
 
-- [ ] **Step 3: Manual check**
+- [ ] **3단계: 수동 확인**
 
-Run: `npm run dev`, open `/posts/<id>/edit`
-Expected: form pre-filled with existing title/content; saving redirects back to the detail page and shows the updated content plus a "수정됨" timestamp.
+실행: `npm run dev`, `/posts/<id>/edit` 접속
+기대 결과: 기존 제목/내용이 채워진 폼이 보임; 저장하면 상세 페이지로 리다이렉트되고 수정된 내용과 "수정됨" 타임스탬프가 표시됨
 
-- [ ] **Step 4: Commit**
+- [ ] **4단계: 커밋**
 
 ```bash
 git add "app/posts/[id]/edit/page.tsx" "app/posts/[id]/edit/edit-form.tsx"
@@ -992,60 +992,59 @@ git commit -m "feat: 게시글 수정 페이지"
 
 ---
 
-### Task 10: Full manual verification pass
+### Task 10: 전체 수동 검증
 
-**Files:** none (verification only)
+**파일:** 없음 (검증만 수행)
 
-- [ ] **Step 1: Run the automated test suite**
+- [ ] **1단계: 자동 테스트 전체 실행**
 
-Run: `npm test`
-Expected: all `lib/db.test.ts`, `lib/posts.test.ts`, `lib/comments.test.ts` tests pass (14 tests total)
+실행: `npm test`
+기대 결과: `lib/db.test.ts`, `lib/posts.test.ts`, `lib/comments.test.ts` 전부 통과 (총 15개 테스트)
 
-- [ ] **Step 2: Click through the golden path**
+- [ ] **2단계: 골든 패스 클릭스루**
 
-Run: `npm run dev`, then in the browser:
-1. Home page shows empty state
-2. Create a post → redirected to its detail page
-3. Detail page shows the post; add a comment → appears without full reload
-4. Edit the post → detail page shows new content + "수정됨"
-5. Delete the comment → it disappears
-6. Delete the post → redirected to home, list is empty again
+실행: `npm run dev` 후 브라우저에서:
+1. 홈 페이지가 빈 상태로 보임
+2. 글 작성 → 상세 페이지로 리다이렉트
+3. 상세 페이지에 글이 보임; 댓글 작성 → 전체 새로고침 없이 반영됨
+4. 글 수정 → 상세 페이지에 새 내용 + "수정됨" 표시
+5. 댓글 삭제 → 사라짐
+6. 글 삭제 → 홈으로 리다이렉트, 목록이 다시 비어있음
 
-Expected: every step behaves as described, no console errors in the browser devtools
+기대 결과: 위 모든 단계가 설명대로 동작하고, 브라우저 개발자도구에 콘솔 에러가 없음
 
-- [ ] **Step 3: Check edge cases**
+- [ ] **3단계: 엣지케이스 확인**
 
-- Visit `/posts/9999` (nonexistent id) → Next.js 404 page
-- Submit the new-post form with an empty title → Korean validation message shown, no post created
+- `/posts/9999`(존재하지 않는 id) 접속 → Next.js 404 페이지
+- 글쓰기 폼을 제목 없이 제출 → 한글 검증 메시지 표시, 글이 생성되지 않음
 
-Expected: both behave as described
+기대 결과: 둘 다 설명대로 동작
 
-- [ ] **Step 4: Commit** (only if Step 2/3 uncovered fixes)
+- [ ] **4단계: 커밋** (2·3단계에서 수정사항이 발견된 경우에만)
 
 ```bash
 git add -A
 git commit -m "fix: 수동 검증 중 발견된 버그 수정"
 ```
 
-## Manual verification notes (2026-08-07)
+## 수동 검증 기록 (2026-08-07)
 
-No browser was available in this session, so the full click-through (create →
-comment → edit → delete comment → delete post → 404 → validation) was
-reproduced via `curl` against the running dev server, simulating the exact
-multipart `$ACTION_*` fields Next.js renders into each form for progressive
-enhancement. All flows worked and were confirmed both via HTTP response codes
-and direct SQLite inspection.
+이 세션에는 브라우저가 없어서, 전체 클릭스루(작성 → 댓글 → 수정 → 댓글 삭제 →
+글 삭제 → 404 → 검증)를 `curl`로 재현했다. Next.js가 progressive
+enhancement를 위해 각 폼에 렌더링하는 `$ACTION_*` 멀티파트 필드를 그대로
+흉내낸 것이다. 모든 흐름이 HTTP 응답 코드와 SQLite 직접 조회 양쪽으로
+정상 확인됐다.
 
-One surprising finding during this process: a POST to a **non-redirecting**
-Server Action (`createCommentAction`, `deleteCommentAction`) hung
-indefinitely when the request had no `Origin` header — curl doesn't send one
-by default, but every real browser always does on same-origin form
-submissions. Adding `-H "Origin: http://localhost:3000"` made every action
-complete normally (first call ~20s due to one-time dev-mode compilation,
-subsequent calls ~150-250ms). Redirecting actions (`createPostAction`,
-`updatePostAction`, `deletePostAction`) were unaffected either way. This is a
-Next.js 14.2 dev-server quirk tied to how it decides to respond to a
-non-redirecting action without a same-origin signal — not an application bug,
-and not something a real user's browser would ever trigger. No code change
-was made for it; documenting it here so it isn't re-investigated from
-scratch later.
+이 과정에서 뜻밖의 발견이 하나 있었다: **리다이렉트하지 않는** Server
+Action(`createCommentAction`, `deleteCommentAction`)에 `Origin` 헤더 없이
+POST를 보내면 응답이 무한 대기 상태가 됐다. curl은 기본적으로 Origin
+헤더를 보내지 않지만, 실제 브라우저는 동일 출처 폼 제출 시 항상 이 헤더를
+보낸다. `-H "Origin: http://localhost:3000"`을 추가하자 모든 액션이
+정상 완료됐다(첫 호출은 dev 모드 최초 컴파일 비용 때문에 약 20초, 이후
+호출은 150~250ms). 리다이렉트하는 액션(`createPostAction`,
+`updatePostAction`, `deletePostAction`)은 Origin 유무와 무관하게 항상
+정상이었다. 이는 Next.js 14.2 dev 서버가 동일 출처 신호 없는 비-리다이렉트
+액션에 응답하는 방식과 관련된 프레임워크 특성이며, 애플리케이션 버그가
+아니고 실제 사용자의 브라우저에서는 절대 발생하지 않는다. 그래서 코드는
+수정하지 않았고, 나중에 다시 처음부터 조사하는 일이 없도록 여기에
+기록해둔다.
