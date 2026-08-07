@@ -1026,3 +1026,26 @@ Expected: both behave as described
 git add -A
 git commit -m "fix: 수동 검증 중 발견된 버그 수정"
 ```
+
+## Manual verification notes (2026-08-07)
+
+No browser was available in this session, so the full click-through (create →
+comment → edit → delete comment → delete post → 404 → validation) was
+reproduced via `curl` against the running dev server, simulating the exact
+multipart `$ACTION_*` fields Next.js renders into each form for progressive
+enhancement. All flows worked and were confirmed both via HTTP response codes
+and direct SQLite inspection.
+
+One surprising finding during this process: a POST to a **non-redirecting**
+Server Action (`createCommentAction`, `deleteCommentAction`) hung
+indefinitely when the request had no `Origin` header — curl doesn't send one
+by default, but every real browser always does on same-origin form
+submissions. Adding `-H "Origin: http://localhost:3000"` made every action
+complete normally (first call ~20s due to one-time dev-mode compilation,
+subsequent calls ~150-250ms). Redirecting actions (`createPostAction`,
+`updatePostAction`, `deletePostAction`) were unaffected either way. This is a
+Next.js 14.2 dev-server quirk tied to how it decides to respond to a
+non-redirecting action without a same-origin signal — not an application bug,
+and not something a real user's browser would ever trigger. No code change
+was made for it; documenting it here so it isn't re-investigated from
+scratch later.
