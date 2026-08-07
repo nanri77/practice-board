@@ -1,0 +1,343 @@
+:root {
+  --paper: #e7e1cf;
+  --paper-line: #c9bfa0;
+  --ink: #2a2621;
+  --ink-soft: #5c5546;
+  --seal: #b5342a;
+  --seal-deep: #8f2018;
+  --font-display: "Batang", "AppleMyungjo", "Nanum Myeongjo", serif;
+  --font-body: "Malgun Gothic", "Apple SD Gothic Neo", "Pretendard", -apple-system,
+    sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--paper);
+  background-image: radial-gradient(circle, rgba(42, 38, 33, 0.05) 1px, transparent 1px);
+  background-size: 14px 14px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--seal);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 6rem;
+}
+
+/* Board header (home page only) */
+.board-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 3px double var(--paper-line);
+  padding-bottom: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.board-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+/* Back-navigation on sub-pages */
+.page-nav {
+  margin-bottom: 2rem;
+}
+
+.page-nav a {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.page-nav a:hover {
+  color: var(--seal);
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 4vw, 1.9rem);
+  font-weight: 700;
+  margin: 0 0 1.5rem;
+}
+
+/* Seal button - the signature interactive element */
+.seal-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--seal);
+  color: #fdf9ee;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: 2px solid var(--seal);
+  border-radius: 4px;
+  padding: 0.55rem 1.1rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 120ms ease, transform 80ms ease;
+}
+
+.seal-button:hover {
+  background: var(--seal-deep);
+  border-color: var(--seal-deep);
+}
+
+.seal-button:active {
+  transform: scale(0.97);
+}
+
+.seal-button--small {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.85rem;
+}
+
+/* Post list (home page) */
+.post-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.post-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--paper-line);
+}
+
+.seal-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 3px;
+  background: var(--seal);
+  color: #fdf9ee;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.seal-badge--inline {
+  width: 1.6rem;
+  height: 1.6rem;
+  font-size: 0.7rem;
+  vertical-align: middle;
+  margin-right: 0.4rem;
+}
+
+.post-row-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.post-row-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.post-row-title a {
+  text-decoration: none;
+}
+
+.post-row-title a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--seal);
+}
+
+.post-row-meta {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin-top: 0.15rem;
+}
+
+.empty-state {
+  padding: 3rem 0;
+  text-align: center;
+  color: var(--ink-soft);
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  line-height: 1.9;
+}
+
+/* Post detail */
+.post-detail-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 5vw, 2.1rem);
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+}
+
+.post-detail-meta-block {
+  margin-bottom: 1.5rem;
+}
+
+.post-detail-meta {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.post-detail-updated {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin: 0.25rem 0 0;
+}
+
+.post-detail-content {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--paper-line);
+}
+
+.post-actions {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.text-link {
+  font-size: 0.9rem;
+  color: var(--seal);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 120ms ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: var(--font-body);
+}
+
+.text-link:hover {
+  text-decoration-color: var(--seal);
+}
+
+/* Comments */
+.comments-heading {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.comment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--paper-line);
+  font-size: 0.95rem;
+}
+
+.comment-author {
+  font-weight: 700;
+  margin-right: 0.4rem;
+}
+
+/* Forms */
+.form-stack {
+  margin-top: 1.5rem;
+}
+
+.field {
+  margin-bottom: 1.4rem;
+}
+
+.field label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 0.35rem;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--paper-line);
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--ink);
+  padding: 0.5rem 0.1rem;
+  outline-offset: 4px;
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 6rem;
+  line-height: 1.6;
+}
+
+.field input:focus,
+.field textarea:focus {
+  border-bottom-color: var(--seal);
+}
+
+.form-error {
+  color: var(--seal-deep);
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.comment-form {
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 480px) {
+  .board-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}

@@ -10,15 +10,23 @@ export default function CommentForm({ postId }: { postId: number }) {
   const [state, formAction] = useFormState(action, initialState);
 
   return (
-    <form action={formAction}>
-      <div>
-        <input name="nickname" placeholder="닉네임" />
+    <form action={formAction} className="comment-form form-stack">
+      <div className="field">
+        <label htmlFor="nickname">닉네임</label>
+        <input id="nickname" name="nickname" />
       </div>
-      <div>
-        <textarea name="content" placeholder="댓글을 입력하세요" />
+      <div className="field">
+        <label htmlFor="content">댓글</label>
+        <textarea id="content" name="content" placeholder="댓글을 입력하세요" />
       </div>
-      <button type="submit">댓글 등록</button>
-      {state.error && <p role="alert">{state.error}</p>}
+      <button type="submit" className="seal-button seal-button--small">
+        댓글 등록
+      </button>
+      {state.error && (
+        <p className="form-error" role="alert">
+          {state.error}
+        </p>
+      )}
     </form>
   );
 }
