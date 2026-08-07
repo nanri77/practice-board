@@ -395,7 +395,9 @@ export function createPost(
 }
 
 export function getPosts(db: DB): Post[] {
-  return db.prepare("SELECT * FROM posts ORDER BY created_at DESC").all() as Post[];
+  return db
+    .prepare("SELECT * FROM posts ORDER BY created_at DESC, id DESC")
+    .all() as Post[];
 }
 
 export function getPost(db: DB, id: number): Post | null {
@@ -530,7 +532,9 @@ export function createComment(
 
 export function getComments(db: DB, postId: number): Comment[] {
   return db
-    .prepare("SELECT * FROM comments WHERE post_id = ? ORDER BY created_at ASC")
+    .prepare(
+      "SELECT * FROM comments WHERE post_id = ? ORDER BY created_at ASC, id ASC"
+    )
     .all(postId) as Comment[];
 }
 
